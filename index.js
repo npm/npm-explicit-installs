@@ -1,4 +1,3 @@
-var moment = require("moment")
 var logos = require("./logos")
 
 module.exports = require("./data")
@@ -8,9 +7,9 @@ module.exports = require("./data")
     pkg.version = pkg['dist-tags'].latest
     if (pkg.versions) {
       pkg.version = pkg.versions[pkg.version].version
-      pkg.publishedBy = pkg.versions[pkg.version]._npmUser
+      pkg.publisher = pkg.versions[pkg.version]._npmUser
     }
-    pkg.lastPublished = moment(pkg.time[pkg.version]).fromNow()
+    pkg.lastPublishedAt = pkg.time[pkg.version]
     delete pkg.versions
 
     // Add logos

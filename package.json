@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/npm/npm-explicit-installs",
   "dependencies": {
-    "moment": "^2.9.0",
     "pkgs": "^1.2.0"
   }
 }
