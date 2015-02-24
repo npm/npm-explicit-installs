@@ -1,0 +1,27 @@
+{
+  "name": "npm-explicit-installs",
+  "version": "1.0.0",
+  "description": "A temporary thing to get stuff on the npm homepage",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js > data.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/npm/npm-explicit-installs.git"
+  },
+  "keywords": [
+    "temp"
+  ],
+  "author": "Zeke Sikelianos <zeke@sikelianos.com> (http://zeke.sikelianos.com/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/npm/npm-explicit-installs/issues"
+  },
+  "homepage": "https://github.com/npm/npm-explicit-installs",
+  "dependencies": {
+    "moment": "^2.9.0",
+    "pkgs": "^1.2.0"
+  }
+}
