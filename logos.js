@@ -9,6 +9,7 @@ module.exports = {
   gulp: "https://raw.githubusercontent.com/gulpjs/artwork/master/gulp-2x.png",
   grunt: "https://i.cloudup.com/bDkmXyEmr5.png",
   "grunt-cli": "https://i.cloudup.com/bDkmXyEmr5.png",
+  jade: "https://cldup.com/5q08DaEBdw.png",
   karma: "https://cldup.com/0286W-2y27.png",
   less: "https://i.cloudup.com/LYSQDzsBKK.png",
   npm: "https://cldup.com/Rg6WLgqccB.svg",
