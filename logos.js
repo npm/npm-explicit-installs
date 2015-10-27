@@ -11,6 +11,7 @@ module.exports = {
   "grunt-cli": "https://i.cloudup.com/bDkmXyEmr5.png",
   karma: "https://cldup.com/0286W-2y27.png",
   less: "https://i.cloudup.com/LYSQDzsBKK.png",
+  mocha: "https://cldup.com/YOslFroa8t.png",
   npm: "https://cldup.com/Rg6WLgqccB.svg",
   pm2: "https://cldup.com/PKpktytKH9.png",
   statsd: "https://cldup.com/3s3hGntQAy.svg",
