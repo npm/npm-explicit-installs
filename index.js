@@ -40,13 +40,19 @@ ExplicitInstalls.getLogos = function () {
 
 ExplicitInstalls.pkgs = require('pkgs')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
+ExplicitInstalls.client.on('error', function(err) {
+  console.error(err.message)
+})
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
 ExplicitInstalls.cacheTtl = 36000 * 4 // only reload packages every 4 hours.
 
 function checkCache () {
   return new Promise(function (resolve, reject) {
+    // redis client is failing to connect, don't use cache.
+    if (!ExplicitInstalls.client.connected) return resolve(null)
+
     ExplicitInstalls.client.get(ExplicitInstalls.cacheKey, function (err, pkgs) {
-      if (err) console.error('failed to read cache', ExplicitInstalls.cacheKey)
+      if (err) console.error('failed to read cache:', ExplicitInstalls.cacheKey)
       return resolve(pkgs ? JSON.parse(pkgs) : null)
     })
   })
@@ -55,7 +61,10 @@ function checkCache () {
 function loadPackageMeta (pkgs, logos) {
   return new Promise(function (resolve, reject) {
     ExplicitInstalls.pkgs(pkgs, function (err, pkgs) {
-      if (err) return reject(err)
+      if (err) {
+        console.error('failed to load package meta formation:', err.message)
+        return resolve([])
+      }
       else return resolve(mapPkgs(pkgs, logos))
     })
   })
@@ -66,8 +75,11 @@ function loadPackageMeta (pkgs, logos) {
 
 function populateCache (pkgs) {
   return new Promise(function (resolve, reject) {
+    // redis client is failing to connect, don't set cache.
+    if (!ExplicitInstalls.client.connected) return resolve(pkgs)
+
     ExplicitInstalls.client.setex(ExplicitInstalls.cacheKey, ExplicitInstalls.cacheTtl, JSON.stringify(pkgs), function (err) {
-      if (err) console.error('failed to cache packages to', ExplicitInstalls.cacheKey)
+      if (err) console.error('failed to cache packages:', ExplicitInstalls.cacheKey)
       return resolve(pkgs)
     })
   })

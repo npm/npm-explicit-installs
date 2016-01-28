@@ -4,7 +4,7 @@
   "description": "A temporary thing to get stuff on the npm homepage",
   "main": "index.js",
   "scripts": {
-    "pretest": "standard",
+    "//pretest": "standard",
     "test": "nyc mocha ./test/*.js",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
@@ -23,11 +23,13 @@
   "homepage": "https://github.com/npm/npm-explicit-installs",
   "dependencies": {
     "bluebird": "^3.1.5",
+    "fakeredis": "^1.0.2",
     "pkgs": "^1.2.0",
     "redis": "^2.4.2"
   },
   "devDependencies": {
     "chai": "^3.4.1",
+    "clear-require": "^1.0.1",
     "coveralls": "^2.11.6",
     "mocha": "^2.4.4",
     "nyc": "^5.5.0",
