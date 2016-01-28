@@ -13,6 +13,7 @@ describe('npm-explicit-installs', function () {
   describe('redis is down', function () {
     before(function () {
       process.env.REDIS_URL = 'redis://fake:9999'
+      clearRequire('../')
       npmExplicitInstalls = require('../')
     })
 
