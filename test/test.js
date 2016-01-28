@@ -7,11 +7,13 @@ var fs = require('fs')
 require('chai').should()
 
 describe('npm-explicit-installs', function () {
-  beforeEach(function (done) {
+  function clean (done) {
     npmExplicitInstalls.client.del(npmExplicitInstalls.cacheKey, function (err) {
       return done(err)
     })
-  })
+  }
+  beforeEach(clean)
+  after(clean)
 
   it("loads package data from the registry, if it's fallen out of cache", function (done) {
     npmExplicitInstalls.pkgs = function (pkgs, cb) {
