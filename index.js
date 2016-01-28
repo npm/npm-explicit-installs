@@ -41,7 +41,7 @@ ExplicitInstalls.getLogos = function (cb) {
 ExplicitInstalls.pkgs = require('pkgs')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
-ExplicitInstalls.cacheTtl = 36000 // only reload packages every hour.
+ExplicitInstalls.cacheTtl = 36000 * 4 // only reload packages every 4 hours.
 
 function checkCache () {
   return new Promise(function (resolve, reject) {
