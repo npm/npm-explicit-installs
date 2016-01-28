@@ -7,7 +7,7 @@ var fs = require('fs')
 var redis = require('redis')
 
 require('chai').should()
-console.error = function() {}
+console.error = function () {}
 
 describe('npm-explicit-installs', function () {
   describe('redis is down', function () {
@@ -131,7 +131,7 @@ describe('npm-explicit-installs', function () {
   })
 
   describe('package service is down', function () {
-    it('resolves an empty array of packages', function () {
+    it('resolves an empty array of packages', function (done) {
       npmExplicitInstalls.pkgs = function (pkgs, cb) {
         return cb(Error("i hame no idea what I'm doing"))
       }

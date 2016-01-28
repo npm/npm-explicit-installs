@@ -40,7 +40,7 @@ ExplicitInstalls.getLogos = function () {
 
 ExplicitInstalls.pkgs = require('pkgs')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
-ExplicitInstalls.client.on('error', function(err) {
+ExplicitInstalls.client.on('error', function (err) {
   console.error(err.message)
 })
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
