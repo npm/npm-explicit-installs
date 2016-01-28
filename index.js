@@ -22,7 +22,7 @@ function ExplicitInstalls (cb) {
     .nodeify(cb)
 }
 
-ExplicitInstalls.getPackages = function (cb) {
+ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
     process.nextTick(function () {
       resolve(packages)
@@ -30,7 +30,7 @@ ExplicitInstalls.getPackages = function (cb) {
   })
 }
 
-ExplicitInstalls.getLogos = function (cb) {
+ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
     process.nextTick(function () {
       resolve(logos)
