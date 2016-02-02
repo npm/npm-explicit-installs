@@ -91,7 +91,11 @@ function loadPackageMeta (pkgs, logos) {
   return new Promise(function (resolve, reject) {
     map(pkgs, function (pkg, cb) {
       ExplicitInstalls.npmStats(opts).module(pkg).info(function (err, info) {
-        return cb(err, info)
+        if (err) {
+          console.error('failed to load package:', err.message)
+          return cb(null, packageError(pkg))
+        }
+        return cb(null, info)
       })
     }, function (err, pkgs) {
       if (err) {
@@ -140,6 +144,26 @@ function mapPkgs (pkgs, logos) {
       logo: logos[pkg.name]
     }
   })
+}
+
+function packageError (pkg) {
+  return {
+    name: pkg,
+    description: 'not found',
+    'dist-tags': {
+      latest: 'n/a'
+    },
+    time: {
+      'n/a': Date().toString()
+    },
+    versions: {
+      'n/a': {
+        _npmUser: {
+          name: 'n/a'
+        }
+      }
+    }
+  }
 }
 
 module.exports = ExplicitInstalls

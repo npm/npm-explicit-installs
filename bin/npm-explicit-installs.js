@@ -29,7 +29,7 @@ require('yargs')
       name: 'package',
       message: 'remove package from homepage',
       type: 'list',
-      choices: packages,
+      choices: packages
     }, function (answer) {
       packages.splice(packages.indexOf(answer.package), 1)
       fs.writeFileSync(path.resolve(__dirname, '../packages.json'), JSON.stringify(packages, null, 2), 'utf-8')

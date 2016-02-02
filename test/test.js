@@ -180,11 +180,11 @@ describe('npm-explicit-installs', function () {
   })
 
   describe('package service is down', function () {
-    it('resolves an empty array of packages', function (done) {
-      mockNpmStats(npmExplicitInstalls, Error("i hame no idea what I'm doing"))
+    it('populates packages with the default packageError object', function (done) {
+      mockNpmStats(npmExplicitInstalls, Error("i have no idea what I'm doing"))
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
-        expect(pkgs).to.deep.equal([])
+        pkgs[0].description.should.equal('not found')
         return done()
       })
     })
