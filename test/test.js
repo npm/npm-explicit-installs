@@ -31,6 +31,22 @@ function mockNpmStats (npmExplicitInstalls, error) {
   }
 }
 
+function mockGetPackages (npmExplicitInstalls, packages) {
+  var original = npmExplicitInstalls.getPackages
+
+  npmExplicitInstalls.getPackages = function () {
+    return new Promise(function (resolve, reject) {
+      process.nextTick(function () {
+        resolve(packages)
+      })
+    })
+  }
+
+  return function reset () {
+    npmExplicitInstalls.getPackages = original
+  }
+}
+
 describe('npm-explicit-installs', function () {
   describe('redis is down', function () {
     before(function () {
@@ -66,7 +82,10 @@ describe('npm-explicit-installs', function () {
       npmExplicitInstalls = require('../')
       mockNpmStats(npmExplicitInstalls)
     })
-    beforeEach(clean)
+    beforeEach(function (done) {
+      mockNpmStats(npmExplicitInstalls)
+      clean(done)
+    })
     after(clean)
 
     it("loads package data from the registry, if it's fallen out of cache", function (done) {
@@ -104,11 +123,37 @@ describe('npm-explicit-installs', function () {
         }
       ]
 
+      var reset = mockGetPackages(npmExplicitInstalls, ['batman'])
+
       npmExplicitInstalls.client.set(npmExplicitInstalls.cacheKey, JSON.stringify(pkgsCached), function (err) {
         expect(err).to.equal(null)
         npmExplicitInstalls(function (err, pkgs) {
+          reset()
           expect(err).to.equal(null)
           pkgs.should.deep.equal(pkgsCached)
+          return done()
+        })
+      })
+    })
+
+    it('does not use cache if list of packages has changed', function (done) {
+      var pkgsCached = [
+        {
+          name: 'batman',
+          version: '1.0.0',
+          description: 'grumpy detective'
+        }
+      ]
+
+      npmExplicitInstalls.client.set(npmExplicitInstalls.cacheKey, JSON.stringify(pkgsCached), function (err) {
+        expect(err).to.equal(null)
+
+        npmExplicitInstalls(function (err, pkgs) {
+          expect(err).to.equal(null)
+          var gruntCli = pkgs[1]
+          gruntCli.name.should.equal('grunt-cli')
+          gruntCli.version.should.equal('0.1.13')
+          gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
           return done()
         })
       })

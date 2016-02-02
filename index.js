@@ -1,41 +1,49 @@
-var packages = require('./packages')
-var logos = require('./logos')
+var fs = require('fs')
+var path = require('path')
 var Promise = require('bluebird')
 var redis = require('redis')
 var map = require('async').map
 var url = require('url')
+var xor = require('lodash.xor')
 
 function ExplicitInstalls (cb) {
   return checkCache()
     .then(function (pkgs) {
-      if (pkgs) {
-        return pkgs
-      } else {
-        return ExplicitInstalls.getPackages()
-          .then(function (_pkgs) {
-            pkgs = _pkgs
+      return ExplicitInstalls.getPackages()
+        .then(function (_pkgs) {
+          var cachedPackages = (pkgs || []).map(function (p) {
+            return p.name
+          })
+
+          if (xor(_pkgs, cachedPackages).length === 0) {
+            // we can use the cached packages, since no new
+            // packages have been found.
+            return pkgs
+          } else {
             return ExplicitInstalls.getLogos()
-          })
-          .then(function (logos) {
-            return loadPackageMeta(pkgs, logos)
-          })
-      }
+              .then(function (logos) {
+                return loadPackageMeta(_pkgs, logos)
+              })
+          }
+        })
     })
     .nodeify(cb)
 }
 
 ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
-    process.nextTick(function () {
-      resolve(packages)
+    fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
+      if (err) return reject(err)
+      else return resolve(JSON.parse(packages))
     })
   })
 }
 
 ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
-    process.nextTick(function () {
-      resolve(logos)
+    fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
+      if (err) return reject(err)
+      else return resolve(JSON.parse(logos))
     })
   })
 }
