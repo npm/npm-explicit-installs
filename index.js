@@ -2,6 +2,8 @@ var packages = require('./packages')
 var logos = require('./logos')
 var Promise = require('bluebird')
 var redis = require('redis')
+var map = require('async').map
+var url = require('url')
 
 function ExplicitInstalls (cb) {
   return checkCache()
@@ -38,7 +40,7 @@ ExplicitInstalls.getLogos = function () {
   })
 }
 
-ExplicitInstalls.pkgs = require('pkgs')
+ExplicitInstalls.npmStats = require('npm-stats')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
 ExplicitInstalls.client.on('error', function (err) {
   console.error(err.message)
@@ -59,8 +61,31 @@ function checkCache () {
 }
 
 function loadPackageMeta (pkgs, logos) {
+  var opts = {}
+  // slice the registry database
+  // out of our remote URL.
+  if (process.env.COUCH_URL_REMOTE) {
+    var parsed = url.parse(process.env.COUCH_URL_REMOTE)
+    opts.registry = parsed.protocol + '//' + parsed.host
+    opts.modules = parsed.path.split('/')[1] || ''
+  }
+  // if the environment variable exists,
+  // configure our package fetching service
+  // with a proxy URL.
+  if (process.env.PROXY_URL) {
+    opts.nano = {
+      requestDefaults: {
+        proxy: process.env.PROXY_URL
+      }
+    }
+  }
+
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.pkgs(pkgs, function (err, pkgs) {
+    map(pkgs, function (pkg, cb) {
+      ExplicitInstalls.npmStats(opts).module(pkg).info(function (err, info) {
+        return cb(err, info)
+      })
+    }, function (err, pkgs) {
       if (err) {
         console.error('failed to load package meta formation:', err.message)
         return resolve([])

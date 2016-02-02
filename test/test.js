@@ -9,21 +9,38 @@ var redis = require('redis')
 require('chai').should()
 console.error = function () {}
 
+// mock require('npm-stats').module('lodash').info(cb).
+function mockNpmStats (npmExplicitInstalls, error) {
+  var data = JSON.parse(fs.readFileSync('./test/fixtures/data.json', 'utf-8'))
+
+  npmExplicitInstalls.npmStats = function (opts) {
+    return {
+      module: function (module) {
+        return {
+          info: function (cb) {
+            if (error) return cb(error)
+
+            var pkg = data.filter(function (p) {
+              return p.name === module
+            })[0]
+            return cb(null, pkg)
+          }
+        }
+      }
+    }
+  }
+}
+
 describe('npm-explicit-installs', function () {
   describe('redis is down', function () {
     before(function () {
       process.env.REDIS_URL = 'redis://fake:9999'
       clearRequire('../')
       npmExplicitInstalls = require('../')
+      mockNpmStats(npmExplicitInstalls)
     })
 
     it('returns a list of packages', function (done) {
-      npmExplicitInstalls.pkgs = function (pkgs, cb) {
-        return cb(null, JSON.parse(
-          fs.readFileSync('./test/fixtures/data.json', 'utf-8')
-        ))
-      }
-
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
         var gruntCli = pkgs[1]
@@ -47,16 +64,12 @@ describe('npm-explicit-installs', function () {
       delete process.env.REDIS_URL
       clearRequire('../')
       npmExplicitInstalls = require('../')
+      mockNpmStats(npmExplicitInstalls)
     })
     beforeEach(clean)
     after(clean)
 
     it("loads package data from the registry, if it's fallen out of cache", function (done) {
-      npmExplicitInstalls.pkgs = function (pkgs, cb) {
-        return cb(null, JSON.parse(
-          fs.readFileSync('./test/fixtures/data.json', 'utf-8')
-        ))
-      }
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
         var gruntCli = pkgs[1]
@@ -68,11 +81,6 @@ describe('npm-explicit-installs', function () {
     })
 
     it('populates cache', function (done) {
-      npmExplicitInstalls.pkgs = function (pkgs, cb) {
-        return cb(null, JSON.parse(
-          fs.readFileSync('./test/fixtures/data.json', 'utf-8')
-        ))
-      }
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
         npmExplicitInstalls.client.get(npmExplicitInstalls.cacheKey, function (err, pkgsCached) {
@@ -110,11 +118,6 @@ describe('npm-explicit-installs', function () {
       var client = redis.createClient()
       var original = npmExplicitInstalls.client
       npmExplicitInstalls.client = client
-      npmExplicitInstalls.pkgs = function (pkgs, cb) {
-        return cb(null, JSON.parse(
-          fs.readFileSync('./test/fixtures/data.json', 'utf-8')
-        ))
-      }
 
       client.end()
       npmExplicitInstalls(function (err, pkgs) {
@@ -133,9 +136,7 @@ describe('npm-explicit-installs', function () {
 
   describe('package service is down', function () {
     it('resolves an empty array of packages', function (done) {
-      npmExplicitInstalls.pkgs = function (pkgs, cb) {
-        return cb(Error("i hame no idea what I'm doing"))
-      }
+      mockNpmStats(npmExplicitInstalls, Error("i hame no idea what I'm doing"))
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
         expect(pkgs).to.deep.equal([])
