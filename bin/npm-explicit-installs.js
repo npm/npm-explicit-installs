@@ -25,6 +25,8 @@ require('yargs')
   })
   .command('delete', 'delete packages from the home page', function () {
     var packages = require('../packages')
+    var logos = require('../logos')
+
     inquirer.prompt({
       name: 'package',
       message: 'remove package from homepage',
@@ -33,6 +35,10 @@ require('yargs')
     }, function (answer) {
       packages.splice(packages.indexOf(answer.package), 1)
       fs.writeFileSync(path.resolve(__dirname, '../packages.json'), JSON.stringify(packages, null, 2), 'utf-8')
+      if (logos[answer.package]) {
+        delete logos[answer.package]
+        fs.writeFileSync(path.resolve(__dirname, '../logos.json'), JSON.stringify(logos, null, 2), 'utf-8')
+      }
     })
   })
   .command('add', 'add a new package to the home page', function () {
