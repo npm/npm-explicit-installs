@@ -33,8 +33,21 @@ function ExplicitInstalls (cb) {
 ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
     fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
-      if (err) return reject(err)
-      else return resolve(JSON.parse(packages))
+      // error occurred fetching packages from disk.
+      if (err) {
+        console.error('failed to read packages from disk:', err.message)
+        return resolve([])
+      }
+
+      // error occurred parsing packages JSON.
+      try {
+        packages = JSON.parse(packages)
+      } catch (e) {
+        console.error('failed to parse package JSON', e.message)
+        return resolve([])
+      }
+
+      return resolve(packages)
     })
   })
 }
@@ -42,8 +55,21 @@ ExplicitInstalls.getPackages = function () {
 ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
     fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
-      if (err) return reject(err)
-      else return resolve(JSON.parse(logos))
+      // error occurred fetching logos from disk.
+      if (err) {
+        console.error('failed to read logos from disk:', err.message)
+        return resolve({})
+      }
+
+      // error occurred parsing logos JSON.
+      try {
+        logos = JSON.parse(logos)
+      } catch (e) {
+        console.error('failed to parse JSON', e.message)
+        return resolve([])
+      }
+
+      return resolve(logos)
     })
   })
 }
@@ -54,7 +80,9 @@ ExplicitInstalls.client.on('error', function (err) {
   console.error(err.message)
 })
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
-ExplicitInstalls.cacheTtl = 36000 * 4 // only reload packages every 4 hours.
+
+var hour = 1000 * 60 * 60
+ExplicitInstalls.cacheTtl = hour * 4 // only reload packages every 4 hours.
 
 function checkCache () {
   return new Promise(function (resolve, reject) {
@@ -63,7 +91,17 @@ function checkCache () {
 
     ExplicitInstalls.client.get(ExplicitInstalls.cacheKey, function (err, pkgs) {
       if (err) console.error('failed to read cache:', ExplicitInstalls.cacheKey)
-      return resolve(pkgs ? JSON.parse(pkgs) : null)
+
+      if (pkgs) {
+        try {
+          pkgs = JSON.parse(pkgs)
+        } catch (e) {
+          pkgs = null
+          console.error('failed to parse cached JSON:', e.message)
+        }
+      }
+
+      return resolve(pkgs)
     })
   })
 }
