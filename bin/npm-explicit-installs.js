@@ -7,7 +7,7 @@ var inquirer = require('inquirer')
 
 require('yargs')
   .usage('$0 <cmd> [options]')
-  .command('dry-run', 'show the packages that would be displayed on the home page', function () {
+  .command('list', 'show the packages that would be displayed on the home page', function () {
     var npmExplicitInstalls = require('../')
     npmExplicitInstalls.client.on('connect', function () {
       npmExplicitInstalls(function (err, pkgs) {
