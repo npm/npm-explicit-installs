@@ -176,6 +176,22 @@ describe('npm-explicit-installs', function () {
       })
     })
 
+    describe('bustCache', function () {
+      it('deletes entry in redis', function (done) {
+        npmExplicitInstalls.client.set(npmExplicitInstalls.cacheKey, JSON.stringify({}), function (err) {
+          expect(err).to.equal(null)
+          npmExplicitInstalls.bustCache(function (err) {
+            expect(err).to.equal(null)
+            npmExplicitInstalls.client.get(npmExplicitInstalls.cacheKey, function (err, res) {
+              expect(err).to.equal(null)
+              expect(res).to.equal(null)
+              return done()
+            })
+          })
+        })
+      })
+    })
+
     after(function () { npmExplicitInstalls.client.end() })
   })
 

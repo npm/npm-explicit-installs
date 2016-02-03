@@ -122,6 +122,19 @@ function populateCache (pkgs) {
   })
 }
 
+ExplicitInstalls.bustCache = function (cb) {
+  return new Promise(function (resolve, reject) {
+    // redis client is failing to connect, don't set cache.
+    if (!ExplicitInstalls.client.connected) return reject('redis not connected')
+
+    ExplicitInstalls.client.del(ExplicitInstalls.cacheKey, function (err) {
+      if (err) console.error('failed to bust cache:', ExplicitInstalls.cacheKey)
+      return resolve()
+    })
+  })
+  .nodeify(cb)
+}
+
 /*
   Make pkgs match the format expected by newww:
     {{name}}

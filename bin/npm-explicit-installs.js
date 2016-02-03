@@ -67,6 +67,19 @@ require('yargs')
       fs.writeFileSync(path.resolve(__dirname, '../packages.json'), JSON.stringify(packages, null, 2), 'utf-8')
     })
   })
+  .command('bust-cache', 'clear the cache of home page packages', function () {
+    var npmExplicitInstalls = require('../')
+    npmExplicitInstalls.client.on('connect', function () {
+      npmExplicitInstalls.bustCache(function (err) {
+        if (err) {
+          console.log(chalk.red(err.message))
+          return
+        }
+        console.log(chalk.green('cache cleared'))
+        npmExplicitInstalls.client.end()
+      })
+    })
+  })
   .help('help')
   .alias('h', 'help')
   .demand(1, 'you must provide a command to run')
