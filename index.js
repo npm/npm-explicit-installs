@@ -43,7 +43,7 @@ ExplicitInstalls.getPackages = function () {
       try {
         packages = JSON.parse(packages)
       } catch (e) {
-        console.error('failed to parse package JSON', e.message)
+        console.error('failed to parse package JSON:', e.message)
         return resolve([])
       }
 
@@ -65,7 +65,7 @@ ExplicitInstalls.getLogos = function () {
       try {
         logos = JSON.parse(logos)
       } catch (e) {
-        console.error('failed to parse JSON', e.message)
+        console.error('failed to parse logos JSON:', e.message)
         return resolve([])
       }
 
@@ -77,7 +77,7 @@ ExplicitInstalls.getLogos = function () {
 ExplicitInstalls.npmStats = require('npm-stats')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
 ExplicitInstalls.client.on('error', function (err) {
-  console.error(err.message)
+  console.error('redis emitted error:', err.message)
 })
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
 
