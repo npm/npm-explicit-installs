@@ -176,15 +176,31 @@ describe('npm-explicit-installs', function () {
       })
     })
 
+    describe('bustCache', function () {
+      it('deletes entry in redis', function (done) {
+        npmExplicitInstalls.client.set(npmExplicitInstalls.cacheKey, JSON.stringify({}), function (err) {
+          expect(err).to.equal(null)
+          npmExplicitInstalls.bustCache(function (err) {
+            expect(err).to.equal(null)
+            npmExplicitInstalls.client.get(npmExplicitInstalls.cacheKey, function (err, res) {
+              expect(err).to.equal(null)
+              expect(res).to.equal(null)
+              return done()
+            })
+          })
+        })
+      })
+    })
+
     after(function () { npmExplicitInstalls.client.end() })
   })
 
   describe('package service is down', function () {
-    it('resolves an empty array of packages', function (done) {
-      mockNpmStats(npmExplicitInstalls, Error("i hame no idea what I'm doing"))
+    it('populates packages with the default packageError object', function (done) {
+      mockNpmStats(npmExplicitInstalls, Error("i have no idea what I'm doing"))
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
-        expect(pkgs).to.deep.equal([])
+        pkgs[0].description.should.equal('not found')
         return done()
       })
     })

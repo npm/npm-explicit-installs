@@ -91,7 +91,11 @@ function loadPackageMeta (pkgs, logos) {
   return new Promise(function (resolve, reject) {
     map(pkgs, function (pkg, cb) {
       ExplicitInstalls.npmStats(opts).module(pkg).info(function (err, info) {
-        return cb(err, info)
+        if (err) {
+          console.error('failed to load package:', err.message)
+          return cb(null, packageError(pkg))
+        }
+        return cb(null, info)
       })
     }, function (err, pkgs) {
       if (err) {
@@ -118,6 +122,19 @@ function populateCache (pkgs) {
   })
 }
 
+ExplicitInstalls.bustCache = function (cb) {
+  return new Promise(function (resolve, reject) {
+    // redis client is failing to connect, don't set cache.
+    if (!ExplicitInstalls.client.connected) return reject('redis not connected')
+
+    ExplicitInstalls.client.del(ExplicitInstalls.cacheKey, function (err) {
+      if (err) console.error('failed to bust cache:', ExplicitInstalls.cacheKey)
+      return resolve()
+    })
+  })
+  .nodeify(cb)
+}
+
 /*
   Make pkgs match the format expected by newww:
     {{name}}
@@ -140,6 +157,26 @@ function mapPkgs (pkgs, logos) {
       logo: logos[pkg.name]
     }
   })
+}
+
+function packageError (pkg) {
+  return {
+    name: pkg,
+    description: 'not found',
+    'dist-tags': {
+      latest: 'n/a'
+    },
+    time: {
+      'n/a': Date().toString()
+    },
+    versions: {
+      'n/a': {
+        _npmUser: {
+          name: 'n/a'
+        }
+      }
+    }
+  }
 }
 
 module.exports = ExplicitInstalls
