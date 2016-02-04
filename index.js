@@ -192,9 +192,18 @@ function mapPkgs (pkgs, logos) {
       version: version,
       lastPublishedAt: pkg.time[version],
       publisher: pkg.versions[version]._npmUser,
-      logo: logos[pkg.name]
+      logo: getLogo(pkg.versions[version], logos)
     }
   })
+}
+
+function getLogo (latest, logos) {
+  var logo = latest.logo
+  if (typeof logo === 'string') {
+    return logo
+  } else {
+    return logos[latest.name]
+  }
 }
 
 function packageError (pkg) {

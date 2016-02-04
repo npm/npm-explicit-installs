@@ -216,6 +216,26 @@ describe('npm-explicit-installs', function () {
       })
     })
 
+    describe('logos', function () {
+      it('should use the logo from a package.json if it exists is a string', function (done) {
+        npmExplicitInstalls(function (err, pkgs) {
+          expect(err).to.equal(null)
+          // browserify has a string URL logo.
+          pkgs[0].logo.should.equal('http://example.com/logo.png')
+          return done()
+        })
+      })
+
+      it('should not use logo from package.json if it is not a string', function (done) {
+        npmExplicitInstalls(function (err, pkgs) {
+          expect(err).to.equal(null)
+          // bower has an object representing its logo.
+          pkgs[2].logo.should.equal('https://i.cloudup.com/Ka0R3QvWRs.png')
+          return done()
+        })
+      })
+    })
+
     after(function () { npmExplicitInstalls.client.end() })
   })
 
