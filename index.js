@@ -1,4 +1,3 @@
-var fs = require('fs')
 var path = require('path')
 var Promise = require('bluebird')
 var redis = require('redis')
@@ -15,7 +14,7 @@ function ExplicitInstalls (cb) {
             return p.name
           })
 
-          if (xor(_pkgs, cachedPackages).length === 0) {
+          if (pkgs && xor(_pkgs, cachedPackages).length === 0) {
             // we can use the cached packages, since no new
             // packages have been found.
             return pkgs
@@ -32,7 +31,7 @@ function ExplicitInstalls (cb) {
 
 ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
-    fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
+    ExplicitInstalls.fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
       // error occurred fetching packages from disk.
       if (err) {
         console.error('failed to read packages from disk:', err.message)
@@ -54,7 +53,7 @@ ExplicitInstalls.getPackages = function () {
 
 ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
-    fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
+    ExplicitInstalls.fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
       // error occurred fetching logos from disk.
       if (err) {
         console.error('failed to read logos from disk:', err.message)
@@ -75,6 +74,7 @@ ExplicitInstalls.getLogos = function () {
 }
 
 ExplicitInstalls.npmStats = require('npm-stats')
+ExplicitInstalls.fs = require('fs')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
 ExplicitInstalls.client.on('error', function (err) {
   console.error('redis emitted error:', err.message)
