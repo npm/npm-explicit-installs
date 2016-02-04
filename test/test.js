@@ -136,6 +136,20 @@ describe('npm-explicit-installs', function () {
       })
     })
 
+    it('skips cache if cache contains invalid JSON', function (done) {
+      npmExplicitInstalls.client.set(npmExplicitInstalls.cacheKey, '{"name":', function (err) {
+        expect(err).to.equal(null)
+        npmExplicitInstalls(function (err, pkgs) {
+          expect(err).to.equal(null)
+          var gruntCli = pkgs[1]
+          gruntCli.name.should.equal('grunt-cli')
+          gruntCli.version.should.equal('0.1.13')
+          gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+          return done()
+        })
+      })
+    })
+
     it('does not use cache if list of packages has changed', function (done) {
       var pkgsCached = [
         {
