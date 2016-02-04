@@ -1,6 +1,6 @@
 /* global describe it after beforeEach, before */
 
-var npmExplicitInstalls = null
+var npmExplicitInstalls = require('../')
 var clearRequire = require('clear-require')
 var expect = require('chai').expect
 var fs = require('fs')
@@ -27,6 +27,16 @@ function mockNpmStats (npmExplicitInstalls, error) {
           }
         }
       }
+    }
+  }
+}
+
+function mockFs (npmExplicitInstalls, mockPath, contents) {
+  npmExplicitInstalls.fs = {
+    readFile: function (path, encoding, cb) {
+      if (path.indexOf(mockPath) === -1) return fs.readFile(path, encoding, cb)
+      if (typeof contents !== 'string') return cb(contents)
+      else return cb(null, contents)
     }
   }
 }
@@ -215,6 +225,44 @@ describe('npm-explicit-installs', function () {
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
         pkgs[0].description.should.equal('not found')
+        return done()
+      })
+    })
+  })
+
+  describe('bad files', function () {
+    it('handles bad packages.json having been written to disk', function (done) {
+      mockFs(npmExplicitInstalls, 'packages.json', '{"foo":')
+      npmExplicitInstalls(function (err, pkgs) {
+        expect(err).to.equal(null)
+        pkgs.length.should.eq(0)
+        return done()
+      })
+    })
+
+    it('handles reading packages.json thowing error', function (done) {
+      mockFs(npmExplicitInstalls, 'packages.json', Error('i have no idea what i am doing'))
+      npmExplicitInstalls(function (err, pkgs) {
+        expect(err).to.equal(null)
+        pkgs.length.should.eq(0)
+        return done()
+      })
+    })
+
+    it('handles bad logos.json having been written to disk', function (done) {
+      mockFs(npmExplicitInstalls, 'logos.json', '{"foo":')
+      npmExplicitInstalls(function (err, logos) {
+        expect(err).to.equal(null)
+        Array.isArray(logos).should.equal(true)
+        return done()
+      })
+    })
+
+    it('handles reading logos.json thowing error', function (done) {
+      mockFs(npmExplicitInstalls, 'logos.json', Error('i have no idea what i am doing'))
+      npmExplicitInstalls(function (err, logos) {
+        expect(err).to.equal(null)
+        Array.isArray(logos).should.equal(true)
         return done()
       })
     })
