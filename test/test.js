@@ -217,7 +217,7 @@ describe('npm-explicit-installs', function () {
     })
 
     describe('logos', function () {
-      it('should use the logo from a package.json if it exists is a string', function (done) {
+      it('should use the logo from a package.json if it exists and is a string', function (done) {
         npmExplicitInstalls(function (err, pkgs) {
           expect(err).to.equal(null)
           // browserify has a string URL logo.
