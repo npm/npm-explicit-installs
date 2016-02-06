@@ -217,20 +217,44 @@ describe('npm-explicit-installs', function () {
     })
 
     describe('logos', function () {
+      it('should not use logo from package.json, unless we are npmo', function (done) {
+        npmExplicitInstalls(function (err, pkgs) {
+          expect(err).to.equal(null)
+          // browserify has a string URL logo.
+          pkgs[0].logo.should.equal('https://d21ii91i3y6o6h.cloudfront.net/gallery_images/from_proof/1647/small/1405586570/browserify-2-hexagon-sticker.png')
+          return done()
+        })
+      })
+
+      it('should not use logo from package.json, if it is not a supported image type', function (done) {
+        process.env.FEATURE_NPMO = 'true'
+        npmExplicitInstalls(function (err, pkgs) {
+          expect(err).to.equal(null)
+          // gulp has an svg image which we do not currently support.
+          pkgs[3].logo.should.equal('https://raw.githubusercontent.com/gulpjs/artwork/master/gulp-2x.png')
+          delete process.env.FEATURE_NPMO
+          return done()
+        })
+      })
+
       it('should use the logo from a package.json if it exists and is a string', function (done) {
+        process.env.FEATURE_NPMO = 'true'
         npmExplicitInstalls(function (err, pkgs) {
           expect(err).to.equal(null)
           // browserify has a string URL logo.
           pkgs[0].logo.should.equal('http://example.com/logo.png')
+          delete process.env.FEATURE_NPMO
           return done()
         })
       })
 
       it('should not use logo from package.json if it is not a string', function (done) {
+        process.env.FEATURE_NPMO = 'true'
         npmExplicitInstalls(function (err, pkgs) {
           expect(err).to.equal(null)
           // bower has an object representing its logo.
           pkgs[2].logo.should.equal('https://i.cloudup.com/Ka0R3QvWRs.png')
+          delete process.env.FEATURE_NPMO
           return done()
         })
       })
