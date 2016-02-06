@@ -80,6 +80,12 @@ ExplicitInstalls.client.on('error', function (err) {
   console.error('redis emitted error:', err.message)
 })
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
+ExplicitInstalls.supportedExtensions = [
+  '.gif',
+  '.png',
+  '.jpg',
+  '.jpeg'
+]
 
 var hour = 1000 * 60 * 60
 ExplicitInstalls.cacheTtl = hour * 4 // only reload packages every 4 hours.
@@ -192,9 +198,22 @@ function mapPkgs (pkgs, logos) {
       version: version,
       lastPublishedAt: pkg.time[version],
       publisher: pkg.versions[version]._npmUser,
-      logo: logos[pkg.name]
+      logo: getLogo(pkg.versions[version], logos)
     }
   })
+}
+
+function getLogo (latest, logos) {
+  var logo = latest.logo
+  var extension = typeof logo === 'string' ? path.parse(logo).ext : null
+  if (typeof logo === 'string' &&
+    process.env.FEATURE_NPMO &&
+    ~ExplicitInstalls.supportedExtensions.indexOf(extension)
+  ) {
+    return logo
+  } else {
+    return logos[latest.name]
+  }
 }
 
 function packageError (pkg) {
