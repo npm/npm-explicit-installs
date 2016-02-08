@@ -10,24 +10,18 @@ require('chai').should()
 console.error = function () {}
 
 // mock require('npm-stats').module('lodash').info(cb).
-function mockNpmStats (npmExplicitInstalls, error) {
+function mockRequest (npmExplicitInstalls, error) {
   var data = JSON.parse(fs.readFileSync('./test/fixtures/data.json', 'utf-8'))
 
-  npmExplicitInstalls.npmStats = function (opts) {
-    return {
-      module: function (module) {
-        return {
-          info: function (cb) {
-            if (error) return cb(error)
+  npmExplicitInstalls.request = function (opts, cb) {
+    if (typeof error === 'number') return cb(null, {statusCode: error})
+    if (error) return cb(error)
 
-            var pkg = data.filter(function (p) {
-              return p.name === module
-            })[0]
-            return cb(null, pkg)
-          }
-        }
-      }
-    }
+    var pkg = data.filter(function (p) {
+      return opts.url.indexOf(p.name) !== -1
+    })[0]
+
+    return cb(null, {statusCode: 200}, pkg)
   }
 }
 
@@ -63,7 +57,7 @@ describe('npm-explicit-installs', function () {
       process.env.REDIS_URL = 'redis://fake:9999'
       clearRequire('../')
       npmExplicitInstalls = require('../')
-      mockNpmStats(npmExplicitInstalls)
+      mockRequest(npmExplicitInstalls)
     })
 
     it('returns a list of packages', function (done) {
@@ -90,10 +84,10 @@ describe('npm-explicit-installs', function () {
       delete process.env.REDIS_URL
       clearRequire('../')
       npmExplicitInstalls = require('../')
-      mockNpmStats(npmExplicitInstalls)
+      mockRequest(npmExplicitInstalls)
     })
     beforeEach(function (done) {
-      mockNpmStats(npmExplicitInstalls)
+      mockRequest(npmExplicitInstalls)
       clean(done)
     })
     after(clean)
@@ -265,7 +259,16 @@ describe('npm-explicit-installs', function () {
 
   describe('package service is down', function () {
     it('populates packages with the default packageError object', function (done) {
-      mockNpmStats(npmExplicitInstalls, Error("i have no idea what I'm doing"))
+      mockRequest(npmExplicitInstalls, Error("i have no idea what I'm doing"))
+      npmExplicitInstalls(function (err, pkgs) {
+        expect(err).to.equal(null)
+        pkgs[0].description.should.equal('not found')
+        return done()
+      })
+    })
+
+    it('populates packages with default packageError object, if bad status is returned', function (done) {
+      mockRequest(npmExplicitInstalls, 404)
       npmExplicitInstalls(function (err, pkgs) {
         expect(err).to.equal(null)
         pkgs[0].description.should.equal('not found')
