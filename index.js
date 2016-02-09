@@ -2,7 +2,6 @@ var path = require('path')
 var Promise = require('bluebird')
 var redis = require('redis')
 var map = require('async').map
-var url = require('url')
 var xor = require('lodash.xor')
 
 function ExplicitInstalls (cb) {
@@ -73,13 +72,14 @@ ExplicitInstalls.getLogos = function () {
   })
 }
 
-ExplicitInstalls.npmStats = require('npm-stats')
+ExplicitInstalls.request = require('request')
 ExplicitInstalls.fs = require('fs')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
 ExplicitInstalls.client.on('error', function (err) {
   console.error('redis emitted error:', err.message)
 })
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
+ExplicitInstalls.defaultRegistry = 'https://skimdb.npmjs.com/registry'
 ExplicitInstalls.supportedExtensions = [
   '.gif',
   '.png',
@@ -113,28 +113,13 @@ function checkCache () {
 }
 
 function loadPackageMeta (pkgs, logos) {
-  var opts = {}
-  // slice the registry database
-  // out of our remote URL.
-  if (process.env.COUCH_URL_REMOTE) {
-    var parsed = url.parse(process.env.COUCH_URL_REMOTE)
-    opts.registry = parsed.protocol + '//' + parsed.host
-    opts.modules = parsed.path.split('/')[1] || ''
-  }
-  // if the environment variable exists,
-  // configure our package fetching service
-  // with a proxy URL.
-  if (process.env.PROXY_URL) {
-    opts.nano = {
-      requestDefaults: {
-        proxy: process.env.PROXY_URL
-      }
-    }
-  }
-
   return new Promise(function (resolve, reject) {
     map(pkgs, function (pkg, cb) {
-      ExplicitInstalls.npmStats(opts).module(pkg).info(function (err, info) {
+      ExplicitInstalls.request(requestOpts(pkg), function (err, res, info) {
+        if (!err && res.statusCode >= 400) {
+          err = Error('unexpected status = ' + res.statusCode)
+        }
+
         if (err) {
           console.error('failed to load package:', err.message)
           return cb(null, packageError(pkg))
@@ -152,6 +137,26 @@ function loadPackageMeta (pkgs, logos) {
   .then(function (pkgs) {
     return populateCache(pkgs)
   })
+}
+
+function requestOpts (pkg) {
+  pkg = decodeURIComponent(pkg)
+  var opts = {method: 'get', json: true}
+  var url = process.env.COUCH_URL_REMOTE || ExplicitInstalls.defaultRegistry
+  if (/^@/.test(pkg) && process.env.FRONT_DOOR_HOST) {
+    // fetch the module from our private npm On-Site
+    // instance (don't set proxy, and pass secret).
+    url = process.env.FRONT_DOOR_HOST
+    opts.qs = {
+      sharedFetchSecret: process.env.SHARED_FETCH_SECRET
+    }
+  } else if (process.env.PROXY_URL) {
+    // fetch from the global registry, we should set a
+    // proxy if it's provided.
+    opts.proxy = process.env.PROXY_URL
+  }
+  opts.url = url + '/' + pkg.replace('/', '%2f')
+  return opts
 }
 
 function populateCache (pkgs) {
