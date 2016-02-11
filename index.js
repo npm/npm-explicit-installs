@@ -3,6 +3,7 @@ var Promise = require('bluebird')
 var redis = require('redis')
 var map = require('async').map
 var xor = require('lodash.xor')
+var logger = require('bole')('npm-explicit-installs')
 
 function ExplicitInstalls (cb) {
   return checkCache()
@@ -33,7 +34,7 @@ ExplicitInstalls.getPackages = function () {
     ExplicitInstalls.fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
       // error occurred fetching packages from disk.
       if (err) {
-        console.error('failed to read packages from disk:', err.message)
+        logger.error('failed to read packages from disk:', err.message)
         return resolve([])
       }
 
@@ -41,7 +42,7 @@ ExplicitInstalls.getPackages = function () {
       try {
         packages = JSON.parse(packages)
       } catch (e) {
-        console.error('failed to parse package JSON:', e.message)
+        logger.error('failed to parse package JSON:', e.message)
         return resolve([])
       }
 
@@ -55,7 +56,7 @@ ExplicitInstalls.getLogos = function () {
     ExplicitInstalls.fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
       // error occurred fetching logos from disk.
       if (err) {
-        console.error('failed to read logos from disk:', err.message)
+        logger.error('failed to read logos from disk:', err.message)
         return resolve({})
       }
 
@@ -63,7 +64,7 @@ ExplicitInstalls.getLogos = function () {
       try {
         logos = JSON.parse(logos)
       } catch (e) {
-        console.error('failed to parse logos JSON:', e.message)
+        logger.error('failed to parse logos JSON:', e.message)
         return resolve([])
       }
 
@@ -76,7 +77,7 @@ ExplicitInstalls.request = require('request')
 ExplicitInstalls.fs = require('fs')
 ExplicitInstalls.client = redis.createClient(process.env.REDIS_URL)
 ExplicitInstalls.client.on('error', function (err) {
-  console.error('redis emitted error:', err.message)
+  logger.error('redis emitted error:', err.message)
 })
 ExplicitInstalls.cacheKey = '__npm_explicit_installs'
 ExplicitInstalls.defaultRegistry = 'https://skimdb.npmjs.com/registry'
@@ -96,14 +97,14 @@ function checkCache () {
     if (!ExplicitInstalls.client.connected) return resolve(null)
 
     ExplicitInstalls.client.get(ExplicitInstalls.cacheKey, function (err, pkgs) {
-      if (err) console.error('failed to read cache:', ExplicitInstalls.cacheKey)
+      if (err) logger.error('failed to read cache:', ExplicitInstalls.cacheKey)
 
       if (pkgs) {
         try {
           pkgs = JSON.parse(pkgs)
         } catch (e) {
           pkgs = null
-          console.error('failed to parse cached JSON:', e.message)
+          logger.error('failed to parse cached JSON:', e.message)
         }
       }
 
@@ -121,14 +122,14 @@ function loadPackageMeta (pkgs, logos) {
         }
 
         if (err) {
-          console.error('failed to load package:', err.message)
+          logger.error('failed to load package:', err.message)
           return cb(null, packageError(pkg))
         }
         return cb(null, info)
       })
     }, function (err, pkgs) {
       if (err) {
-        console.error('failed to load package meta formation:', err.message)
+        logger.error('failed to load package meta formation:', err.message)
         return resolve([])
       }
       else return resolve(mapPkgs(pkgs, logos))
@@ -165,7 +166,7 @@ function populateCache (pkgs) {
     if (!ExplicitInstalls.client.connected) return resolve(pkgs)
 
     ExplicitInstalls.client.setex(ExplicitInstalls.cacheKey, ExplicitInstalls.cacheTtl, JSON.stringify(pkgs), function (err) {
-      if (err) console.error('failed to cache packages:', ExplicitInstalls.cacheKey)
+      if (err) logger.error('failed to cache packages:', ExplicitInstalls.cacheKey)
       return resolve(pkgs)
     })
   })
@@ -177,7 +178,7 @@ ExplicitInstalls.bustCache = function (cb) {
     if (!ExplicitInstalls.client.connected) return reject('redis not connected')
 
     ExplicitInstalls.client.del(ExplicitInstalls.cacheKey, function (err) {
-      if (err) console.error('failed to bust cache:', ExplicitInstalls.cacheKey)
+      if (err) logger.error('failed to bust cache:', ExplicitInstalls.cacheKey)
       return resolve()
     })
   })
