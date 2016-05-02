@@ -66,7 +66,7 @@ describe('npm-explicit-installs', function () {
         var gruntCli = pkgs[1]
         gruntCli.name.should.equal('grunt-cli')
         gruntCli.version.should.equal('0.1.13')
-        gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+        gruntCli.logo.should.equal('logos/grunt.png')
         return done()
       })
     })
@@ -98,7 +98,7 @@ describe('npm-explicit-installs', function () {
         var gruntCli = pkgs[1]
         gruntCli.name.should.equal('grunt-cli')
         gruntCli.version.should.equal('0.1.13')
-        gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+        gruntCli.logo.should.equal('logos/grunt.png')
         return done()
       })
     })
@@ -112,7 +112,7 @@ describe('npm-explicit-installs', function () {
           var gruntCli = pkgsCached[1]
           gruntCli.name.should.equal('grunt-cli')
           gruntCli.version.should.equal('0.1.13')
-          gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+          gruntCli.logo.should.equal('logos/grunt.png')
           return done()
         })
       })
@@ -148,7 +148,7 @@ describe('npm-explicit-installs', function () {
           var gruntCli = pkgs[1]
           gruntCli.name.should.equal('grunt-cli')
           gruntCli.version.should.equal('0.1.13')
-          gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+          gruntCli.logo.should.equal('logos/grunt.png')
           return done()
         })
       })
@@ -171,7 +171,7 @@ describe('npm-explicit-installs', function () {
           var gruntCli = pkgs[1]
           gruntCli.name.should.equal('grunt-cli')
           gruntCli.version.should.equal('0.1.13')
-          gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+          gruntCli.logo.should.equal('logos/grunt.png')
           return done()
         })
       })
@@ -189,7 +189,7 @@ describe('npm-explicit-installs', function () {
         var gruntCli = pkgs[1]
         gruntCli.name.should.equal('grunt-cli')
         gruntCli.version.should.equal('0.1.13')
-        gruntCli.logo.should.equal('https://i.cloudup.com/bDkmXyEmr5.png')
+        gruntCli.logo.should.equal('logos/grunt.png')
         return done()
       })
     })
@@ -215,7 +215,7 @@ describe('npm-explicit-installs', function () {
         npmExplicitInstalls(function (err, pkgs) {
           expect(err).to.equal(null)
           // browserify has a string URL logo.
-          pkgs[0].logo.should.equal('https://d21ii91i3y6o6h.cloudfront.net/gallery_images/from_proof/1647/small/1405586570/browserify-2-hexagon-sticker.png')
+          pkgs[0].logo.should.equal('logos/browserify.png')
           return done()
         })
       })
@@ -225,7 +225,7 @@ describe('npm-explicit-installs', function () {
         npmExplicitInstalls(function (err, pkgs) {
           expect(err).to.equal(null)
           // gulp has an svg image which we do not currently support.
-          pkgs[3].logo.should.equal('https://raw.githubusercontent.com/gulpjs/artwork/master/gulp-2x.png')
+          pkgs[3].logo.should.equal('logos/gulp.svg')
           delete process.env.FEATURE_NPMO
           return done()
         })
@@ -247,7 +247,7 @@ describe('npm-explicit-installs', function () {
         npmExplicitInstalls(function (err, pkgs) {
           expect(err).to.equal(null)
           // bower has an object representing its logo.
-          pkgs[2].logo.should.equal('https://i.cloudup.com/Ka0R3QvWRs.png')
+          pkgs[2].logo.should.equal('logos/bower.png')
           delete process.env.FEATURE_NPMO
           return done()
         })
