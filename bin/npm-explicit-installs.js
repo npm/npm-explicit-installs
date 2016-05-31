@@ -19,7 +19,7 @@ require('yargs')
         pkgs.forEach(function (pkg) {
           console.log(chalk.green(pkg.name), '(' + pkg.version + ')', chalk.gray(pkg.publisher.name))
         })
-        npmExplicitInstalls.client.end()
+        npmExplicitInstalls.client.end(true)
       })
     })
   })
@@ -76,7 +76,7 @@ require('yargs')
           return
         }
         console.log(chalk.green('cache cleared'))
-        npmExplicitInstalls.client.end()
+        npmExplicitInstalls.client.end(true)
       })
     })
   })
