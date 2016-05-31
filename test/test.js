@@ -71,7 +71,7 @@ describe('npm-explicit-installs', function () {
       })
     })
 
-    after(function () { npmExplicitInstalls.client.end() })
+    after(function () { npmExplicitInstalls.client.end(true) })
   })
 
   describe('redis is up', function () {
@@ -182,7 +182,7 @@ describe('npm-explicit-installs', function () {
       var original = npmExplicitInstalls.client
       npmExplicitInstalls.client = client
 
-      client.end()
+      client.end(true)
       npmExplicitInstalls(function (err, pkgs) {
         npmExplicitInstalls.client = original
         expect(err).to.equal(null)
@@ -254,7 +254,7 @@ describe('npm-explicit-installs', function () {
       })
     })
 
-    after(function () { npmExplicitInstalls.client.end() })
+    after(function () { npmExplicitInstalls.client.end(true) })
   })
 
   describe('package service is down', function () {
