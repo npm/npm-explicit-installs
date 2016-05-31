@@ -7,7 +7,8 @@
   "scripts": {
     "pretest": "standard",
     "test": "nyc mocha ./test/*.js",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "release": "standard-version"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,7 @@
     "coveralls": "^2.11.6",
     "mocha": "^2.4.4",
     "nyc": "^5.5.0",
-    "standard": "^5.4.1"
+    "standard": "^5.4.1",
+    "standard-version": "^2.2.1"
   }
 }
