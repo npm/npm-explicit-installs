@@ -88,7 +88,7 @@ ExplicitInstalls.supportedExtensions = [
   '.jpeg'
 ]
 
-var hour = 1000 * 60 * 60
+var hour = 60 * 60
 ExplicitInstalls.cacheTtl = hour * 4 // only reload packages every 4 hours.
 
 function checkCache () {
