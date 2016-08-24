@@ -24,23 +24,23 @@
   },
   "homepage": "https://github.com/npm/npm-explicit-installs",
   "dependencies": {
-    "async": "^1.5.2",
-    "bluebird": "^3.1.5",
-    "bole": "^2.0.0",
+    "async": "^2.0.1",
+    "bluebird": "^3.4.2",
+    "bole": "^3.0.1",
     "chalk": "^1.1.1",
-    "inquirer": "^0.11.4",
-    "lodash.xor": "^4.0.1",
+    "inquirer": "^1.1.2",
+    "lodash.xor": "^4.5.0",
     "redis": "^2.4.2",
-    "request": "^2.69.0",
-    "yargs": "^3.32.0"
+    "request": "^2.74.0",
+    "yargs": "^5.0.0"
   },
   "devDependencies": {
-    "chai": "^3.4.1",
+    "chai": "^3.5.0",
     "clear-require": "^1.0.1",
-    "coveralls": "^2.11.6",
-    "mocha": "^2.4.4",
-    "nyc": "^5.5.0",
-    "standard": "^5.4.1",
-    "standard-version": "^2.2.1"
+    "coveralls": "^2.11.12",
+    "mocha": "^3.0.2",
+    "nyc": "^8.1.0",
+    "standard": "^8.0.0",
+    "standard-version": "^2.4.0"
   }
 }
