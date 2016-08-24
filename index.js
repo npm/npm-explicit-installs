@@ -131,8 +131,9 @@ function loadPackageMeta (pkgs, logos) {
       if (err) {
         logger.error('failed to load package meta formation:', err.message)
         return resolve([])
+      } else {
+        return resolve(mapPkgs(pkgs, logos))
       }
-      else return resolve(mapPkgs(pkgs, logos))
     })
   })
   .then(function (pkgs) {
