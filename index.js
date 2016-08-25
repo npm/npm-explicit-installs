@@ -1,3 +1,4 @@
+var fs = require('fs')
 var path = require('path')
 var Promise = require('bluebird')
 var redis = require('redis')
@@ -5,7 +6,11 @@ var map = require('async').map
 var xor = require('lodash.xor')
 var logger = require('bole')('npm-explicit-installs')
 
+var configDirectory // from whence should we load packages.json and logos.json?
+
 function ExplicitInstalls (cb) {
+  configDirectory = process.env.NEI_CONFIG_DIRECTORY || __dirname
+
   return checkCache()
     .then(function (pkgs) {
       return ExplicitInstalls.getPackages()
@@ -31,7 +36,7 @@ function ExplicitInstalls (cb) {
 
 ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
+    ExplicitInstalls.fs.readFile(path.resolve(configDirectory, './packages.json'), 'utf-8', function (err, packages) {
       // error occurred fetching packages from disk.
       if (err) {
         logger.error('failed to read packages from disk:', err.message)
@@ -53,7 +58,7 @@ ExplicitInstalls.getPackages = function () {
 
 ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
+    ExplicitInstalls.fs.readFile(path.resolve(configDirectory, './logos.json'), 'utf-8', function (err, logos) {
       // error occurred fetching logos from disk.
       if (err) {
         logger.error('failed to read logos from disk:', err.message)
@@ -184,6 +189,31 @@ ExplicitInstalls.bustCache = function (cb) {
     })
   })
   .nodeify(cb)
+}
+
+ExplicitInstalls.add = function (pkg, logo) {
+  configDirectory = process.env.NEI_CONFIG_DIRECTORY || __dirname
+  var logoPath = path.resolve(configDirectory, './logos.json')
+  var logos = {}
+  try {
+    logos = require(logoPath)
+  } catch (_) {
+    // just start with an empty logos file.
+  }
+  var pkgPath = path.resolve(configDirectory, './packages.json')
+  var packages = []
+  try {
+    packages = require(pkgPath)
+  } catch (_) {
+    // just start with an empty packages array.
+  }
+
+  if (logo) {
+    logos[pkg] = logo
+    fs.writeFileSync(logoPath, JSON.stringify(logos, null, 2), 'utf-8')
+  }
+  packages.push(pkg)
+  fs.writeFileSync(pkgPath, JSON.stringify(packages, null, 2), 'utf-8')
 }
 
 /*

@@ -32,7 +32,7 @@ require('yargs')
       message: 'remove package from homepage',
       type: 'list',
       choices: packages
-    }, function (answer) {
+    }).then(function (answer) {
       packages.splice(packages.indexOf(answer.package), 1)
       fs.writeFileSync(path.resolve(__dirname, '../packages.json'), JSON.stringify(packages, null, 2), 'utf-8')
       if (logos[answer.package]) {
@@ -42,9 +42,7 @@ require('yargs')
     })
   })
   .command('add', 'add a new package to the home page', function () {
-    var packages = require('../packages')
-    var logos = require('../logos')
-
+    var npmExplicitInstalls = require('../')
     inquirer.prompt([
       {
         name: 'package',
@@ -58,13 +56,13 @@ require('yargs')
         name: 'logo',
         message: 'url of icon to use for package (optional)'
       }
-    ], function (answer) {
-      if (answer.logo) {
-        logos[answer.package] = answer.logo
-        fs.writeFileSync(path.resolve(__dirname, '../logos.json'), JSON.stringify(logos, null, 2), 'utf-8')
+    ]).then(function (answer) {
+      try {
+        npmExplicitInstalls.add(answer.package, answer.logo)
+        npmExplicitInstalls.client.end(true)
+      } catch (e) {
+        console.log(e)
       }
-      packages.push(answer.package)
-      fs.writeFileSync(path.resolve(__dirname, '../packages.json'), JSON.stringify(packages, null, 2), 'utf-8')
     })
   })
   .command('bust-cache', 'clear the cache of home page packages', function () {
