@@ -342,7 +342,7 @@ describe('npm-explicit-installs', function () {
         browserify.logo.should.equal('https://logo.example.com')
         expect(gruntCli.logo).to.equal(undefined)
         return done()
-      }, {configDirectory: './test/fixtures'})
+      })
     })
 
     after(function () { npmExplicitInstalls.client.end(true) })
