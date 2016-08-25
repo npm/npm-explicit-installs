@@ -231,8 +231,6 @@ ExplicitInstalls.getPackagesSync = function () {
 function tryLoadJson (path, defaultValue) {
   var value
   try {
-    // caching this value causes issues with
-    // tests.
     value = JSON.parse(
       fs.readFileSync(path)
     )
