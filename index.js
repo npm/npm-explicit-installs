@@ -1,3 +1,4 @@
+var fs = require('fs')
 var path = require('path')
 var Promise = require('bluebird')
 var redis = require('redis')
@@ -29,9 +30,13 @@ function ExplicitInstalls (cb) {
     .nodeify(cb)
 }
 
+function configDirectory () {
+  return process.env.NEI_CONFIG_DIRECTORY || __dirname
+}
+
 ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.fs.readFile(path.resolve(__dirname, './packages.json'), 'utf-8', function (err, packages) {
+    ExplicitInstalls.fs.readFile(path.resolve(configDirectory(), './packages.json'), 'utf-8', function (err, packages) {
       // error occurred fetching packages from disk.
       if (err) {
         logger.error('failed to read packages from disk:', err.message)
@@ -53,7 +58,7 @@ ExplicitInstalls.getPackages = function () {
 
 ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.fs.readFile(path.resolve(__dirname, './logos.json'), 'utf-8', function (err, logos) {
+    ExplicitInstalls.fs.readFile(path.resolve(configDirectory(), './logos.json'), 'utf-8', function (err, logos) {
       // error occurred fetching logos from disk.
       if (err) {
         logger.error('failed to read logos from disk:', err.message)
@@ -184,6 +189,52 @@ ExplicitInstalls.bustCache = function (cb) {
     })
   })
   .nodeify(cb)
+}
+
+ExplicitInstalls.add = function (pkg, logo) {
+  var logoPath = path.resolve(configDirectory(), './logos.json')
+  var logos = tryLoadJson(logoPath, {})
+  var pkgPath = path.resolve(configDirectory(), './packages.json')
+  var packages = tryLoadJson(pkgPath, [])
+
+  if (logo) {
+    logos[pkg] = logo
+    fs.writeFileSync(logoPath, JSON.stringify(logos, null, 2), 'utf-8')
+  }
+  packages.push(pkg)
+  fs.writeFileSync(pkgPath, JSON.stringify(packages, null, 2), 'utf-8')
+}
+
+ExplicitInstalls.delete = function (pkg) {
+  var logoPath = path.resolve(configDirectory(), './logos.json')
+  var logos = tryLoadJson(logoPath, {})
+  var pkgPath = path.resolve(configDirectory(), './packages.json')
+  var packages = tryLoadJson(pkgPath, [])
+
+  packages.splice(packages.indexOf(pkg), 1)
+  fs.writeFileSync(pkgPath, JSON.stringify(packages, null, 2), 'utf-8')
+  if (logos[pkg]) {
+    delete logos[pkg]
+    fs.writeFileSync(logoPath, JSON.stringify(logos, null, 2), 'utf-8')
+  }
+}
+
+ExplicitInstalls.getPackagesSync = function () {
+  var pkgPath = path.resolve(configDirectory(), './packages.json')
+  var packages = tryLoadJson(pkgPath, [])
+  return packages
+}
+
+function tryLoadJson (path, defaultValue) {
+  var value
+  try {
+    value = JSON.parse(
+      fs.readFileSync(path)
+    )
+  } catch (_) {
+    value = defaultValue
+  }
+  return value
 }
 
 /*

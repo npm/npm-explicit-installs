@@ -1,10 +1,11 @@
-/* global describe it after beforeEach, before */
+/* global describe it after, beforeEach, before */
 
 var npmExplicitInstalls = require('../')
 var clearRequire = require('clear-require')
 var expect = require('chai').expect
 var fs = require('fs')
 var redis = require('redis')
+var rimraf = require('rimraf')
 
 require('chai').should()
 console.error = function () {}
@@ -210,6 +211,78 @@ describe('npm-explicit-installs', function () {
       })
     })
 
+    describe('add', function () {
+      var logosPath = './test/fixtures/add-test/logos.json'
+      var pkgsPath = './test/fixtures/add-test/packages.json'
+      beforeEach(function () {
+        rimraf.sync(logosPath)
+        rimraf.sync(pkgsPath)
+      })
+
+      it('adds a new package and logo', function () {
+        process.env.NEI_CONFIG_DIRECTORY = './test/fixtures/add-test'
+        npmExplicitInstalls.add('foo', 'foo.logo')
+        npmExplicitInstalls.add('bar', 'bar.logo')
+        delete process.env.NEI_CONFIG_DIRECTORY
+
+        expect(
+          JSON.parse(fs.readFileSync(logosPath))
+        ).to.deep.equal({
+          foo: 'foo.logo',
+          bar: 'bar.logo'
+        })
+
+        expect(
+          JSON.parse(fs.readFileSync(pkgsPath))
+        ).to.deep.equal(['foo', 'bar'])
+      })
+
+      after(function () {
+        rimraf.sync(logosPath)
+        rimraf.sync(pkgsPath)
+      })
+    })
+
+    describe('delete', function () {
+      var logosPath = './test/fixtures/add-test/logos.json'
+      var pkgsPath = './test/fixtures/add-test/packages.json'
+      beforeEach(function () {
+        rimraf.sync(logosPath)
+        rimraf.sync(pkgsPath)
+      })
+
+      it('deletes from packages.json and logos.json', function () {
+        process.env.NEI_CONFIG_DIRECTORY = './test/fixtures/add-test'
+        npmExplicitInstalls.add('foo', 'foo.logo')
+        npmExplicitInstalls.add('bar', 'bar.logo')
+        npmExplicitInstalls.delete('foo')
+        delete process.env.NEI_CONFIG_DIRECTORY
+
+        expect(
+          JSON.parse(fs.readFileSync(logosPath))
+        ).to.deep.equal({
+          bar: 'bar.logo'
+        })
+
+        expect(
+          JSON.parse(fs.readFileSync(pkgsPath))
+        ).to.deep.equal(['bar'])
+      })
+
+      after(function () {
+        rimraf.sync(logosPath)
+        rimraf.sync(pkgsPath)
+      })
+    })
+
+    describe('getPackagesSync', function () {
+      it('returns a list of packages in packages.json', function () {
+        var packages = npmExplicitInstalls.getPackagesSync()
+        packages.should.include('browserify')
+        packages.should.include('grunt-cli')
+      })
+    })
+
     describe('logos', function () {
       it('should not use logo from package.json, unless we are npmo', function (done) {
         npmExplicitInstalls(function (err, pkgs) {
@@ -251,6 +324,24 @@ describe('npm-explicit-installs', function () {
           delete process.env.FEATURE_NPMO
           return done()
         })
+      })
+    })
+
+    it('allows an alternate config location to be specified', function (done) {
+      process.env.NEI_CONFIG_DIRECTORY = './test/fixtures'
+      npmExplicitInstalls(function (err, pkgs) {
+        delete process.env.NEI_CONFIG_DIRECTORY
+
+        expect(err).to.equal(null)
+        var browserify = pkgs[0]
+        var gruntCli = pkgs[1]
+
+        pkgs.length.should.equal(2)
+        gruntCli.name.should.equal('grunt-cli')
+        gruntCli.version.should.equal('0.1.13')
+        browserify.logo.should.equal('https://logo.example.com')
+        expect(gruntCli.logo).to.equal(undefined)
+        return done()
       })
     })
 
