@@ -6,11 +6,7 @@ var map = require('async').map
 var xor = require('lodash.xor')
 var logger = require('bole')('npm-explicit-installs')
 
-var configDirectory // from whence should we load packages.json and logos.json?
-
 function ExplicitInstalls (cb) {
-  configDirectory = process.env.NEI_CONFIG_DIRECTORY || __dirname
-
   return checkCache()
     .then(function (pkgs) {
       return ExplicitInstalls.getPackages()
@@ -34,9 +30,13 @@ function ExplicitInstalls (cb) {
     .nodeify(cb)
 }
 
+function configDirectory () {
+  return process.env.NEI_CONFIG_DIRECTORY || __dirname
+}
+
 ExplicitInstalls.getPackages = function () {
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.fs.readFile(path.resolve(configDirectory, './packages.json'), 'utf-8', function (err, packages) {
+    ExplicitInstalls.fs.readFile(path.resolve(configDirectory(), './packages.json'), 'utf-8', function (err, packages) {
       // error occurred fetching packages from disk.
       if (err) {
         logger.error('failed to read packages from disk:', err.message)
@@ -58,7 +58,7 @@ ExplicitInstalls.getPackages = function () {
 
 ExplicitInstalls.getLogos = function () {
   return new Promise(function (resolve, reject) {
-    ExplicitInstalls.fs.readFile(path.resolve(configDirectory, './logos.json'), 'utf-8', function (err, logos) {
+    ExplicitInstalls.fs.readFile(path.resolve(configDirectory(), './logos.json'), 'utf-8', function (err, logos) {
       // error occurred fetching logos from disk.
       if (err) {
         logger.error('failed to read logos from disk:', err.message)
@@ -192,10 +192,9 @@ ExplicitInstalls.bustCache = function (cb) {
 }
 
 ExplicitInstalls.add = function (pkg, logo) {
-  configDirectory = process.env.NEI_CONFIG_DIRECTORY || __dirname
-  var logoPath = path.resolve(configDirectory, './logos.json')
+  var logoPath = path.resolve(configDirectory(), './logos.json')
   var logos = tryLoadJson(logoPath, {})
-  var pkgPath = path.resolve(configDirectory, './packages.json')
+  var pkgPath = path.resolve(configDirectory(), './packages.json')
   var packages = tryLoadJson(pkgPath, [])
 
   if (logo) {
@@ -207,10 +206,9 @@ ExplicitInstalls.add = function (pkg, logo) {
 }
 
 ExplicitInstalls.delete = function (pkg) {
-  configDirectory = process.env.NEI_CONFIG_DIRECTORY || __dirname
-  var logoPath = path.resolve(configDirectory, './logos.json')
+  var logoPath = path.resolve(configDirectory(), './logos.json')
   var logos = tryLoadJson(logoPath, {})
-  var pkgPath = path.resolve(configDirectory, './packages.json')
+  var pkgPath = path.resolve(configDirectory(), './packages.json')
   var packages = tryLoadJson(pkgPath, [])
 
   packages.splice(packages.indexOf(pkg), 1)
@@ -222,8 +220,7 @@ ExplicitInstalls.delete = function (pkg) {
 }
 
 ExplicitInstalls.getPackagesSync = function () {
-  configDirectory = process.env.NEI_CONFIG_DIRECTORY || __dirname
-  var pkgPath = path.resolve(configDirectory, './packages.json')
+  var pkgPath = path.resolve(configDirectory(), './packages.json')
   var packages = tryLoadJson(pkgPath, [])
   return packages
 }
