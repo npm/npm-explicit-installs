@@ -276,7 +276,7 @@ describe('npm-explicit-installs', function () {
     })
 
     describe('getPackagesSync', function () {
-      it('deletes from packages.json and logos.json', function () {
+      it('returns a list of packages in packages.json', function () {
         var packages = npmExplicitInstalls.getPackagesSync()
         packages.should.include('browserify')
         packages.should.include('grunt-cli')
