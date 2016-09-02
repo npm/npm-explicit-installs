@@ -1,6 +1,6 @@
 {
   "name": "npm-explicit-installs",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "A temporary thing to get stuff on the npm homepage",
   "main": "index.js",
   "bin": "./bin/npm-explicit-installs.js",
